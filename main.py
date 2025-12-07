@@ -26,7 +26,7 @@ print(BLUE+"THIS IS THE DATABASE"+ENDC,rooms)
 print(ascii_uppercase.capitalize())
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "JEUEIGGEIGY"
-socketio = SocketIO(app)
+socketio = SocketIO(app,async_mode='eventlet')
 @app.route("/",methods=["GET", "POST"])
 def home():
     session.clear()
