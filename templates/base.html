@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Koris</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Enable dark mode + Twitter/X style palette -->
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              xblack: "#000000",
+              xdark: "#15202B",     /* Twitter dark background */
+              xdark2: "#192734",    /* Secondary background */
+              xlight: "#8899A6",   /* Muted text */
+              xblue: "#1DA1F2",    /* Twitter blue */
+            },
+          },
+        },
+      }
+    </script>
+
+    <!-- Your custom CSS if needed -->
+    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}" />
+
+    <!-- Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" crossorigin="anonymous"></script>
+    <script>
+      const socket = io();
+      socket.on('connect', () => {
+          socket.emit('my event', { data: "I'm connected!" });
+      });
+    </script>
+</head>
+
+<body class="bg-xdark text-white min-h-screen font-sans">
+
+  <!-- NAVBAR (Twitter-style) -->
+  <nav class="w-full fixed top-0 z-50 backdrop-blur-lg bg-xdark/70 border-b border-xdark2 h-14 flex items-center px-4">
+      <h1 class="text-xl font-semibold tracking-wide hover:text-xblue transition">Koris</h1>
+  </nav>
+
+  <!-- PAGE WRAPPER -->
+  
+          {% block content %}{% endblock %}
+    
+
+</body>
+</html>

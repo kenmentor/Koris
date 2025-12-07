@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="w-full max-w-3xl mx-auto space-y-6" >
+
+    <!-- ROOM HEADER -->
+    <div class="flex items-center justify-between w-full z-50">
+       <div>
+
+       </div>
+
+        <div class="flex items-center gap-3 z-50">
+         
+            <!-- SHARE BUTTON -->
+            <button onclick="shareRoom()" 
+                class="bg-xdark2 border border-xdark hover:border-xblue text-xlight px-4 py-2 rounded-xl shadow transition flex items-center gap-2">
+                Share
+            </button>
+
+            <!-- LEAVE BUTTON -->
+            <button onclick="leaveRoom()" 
+                class="bg-red-600/80 hover:bg-red-600 px-4 py-2 rounded-xl text-white font-semibold transition">
+                Leave
+            </button>
+        </div>
+    </div>
+    <h2 class="text-2xl font-bold text-white">
+            Chat Room: <span class="text-xblue">{{ room }}</span> {{ name }}
+        </h2>
+    <!-- MESSAGES BOX -->
+    <div id="messages" 
+        class="messages border border-xdark p-4 h-[60vh] overflow-y-auto rounded-xl space-y-3 shadow-inner scroll-smooth">
+    </div>
+
+    <!-- INPUT AREA -->
+    <div class="input space-y-4">
+
+        <div class="flex gap-3">
+            <input 
+                type="text" 
+                name="message" 
+                id="message" 
+                placeholder="Type your message..."
+                class="flex-1 bg-xdark focus:bg-xdark2 border border-xdark2 focus:border-xblue px-4 py-3 rounded-xl text-white outline-none transition"
+            />
+
+            <button 
+                id="send-btn" 
+                type="button" 
+                onclick="send()"
+                class="bg-xblue hover:bg-xblue/80 px-6 py-3 rounded-xl text-white font-semibold transition">
+                Send
+            </button>
+        </div>
+
+        <input 
+            type="file" 
+            name="image" 
+            id="imageInput"
+            class="block w-full text-xlight text-sm bg-xdark2 border border-xdark rounded-lg p-2 file:bg-xdark file:border-0 file:px-4 file:py-2 file:text-xlight file:hover:bg-xdark/70 file:cursor-pointer"
+        />
+    </div>
+</div>
+
+<!-- IMAGE POPUP -->
+<div id="imagePreview" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center backdrop-blur-md">
+    <img id="previewImg" class="max-w-[90%] max-h-[90%] rounded-xl scale-90 opacity-0 transition duration-300" />
+</div>
+
+<!-- SCRIPT -->
+<script type="text/javascript">
+    const socketio = io();
+    const messages = document.getElementById("messages");
+    const message = document.getElementById("message");
+    const imageInput = document.getElementById("imageInput");
+alert(`{{ name }}`)
+    const USERNAME = `{{ name }}`.trim().toLowerCase();
+
+    message.addEventListener("keydown",(event)=>{
+if (event.key == "Enter"){
+event.preventDefault()
+send()
+}
+    })
+    // CREATE MESSAGE BUBBLE
+ 
+    const createMessage = (name, text, image=null) => {
+        const isSelf = name.trim().toLowerCase() === USERNAME;
+
+        const align = isSelf ? "justify-end" : "justify-start";
+        const bubbleColor = isSelf ? "bg-xblue text-white" : "bg-xdark text-white";
+        const borderColor = isSelf ? "border-xblue" : "border-xdark2";
+        const nameColor = isSelf ? "text-white" : "text-xblue";
+
+        let imgTag = "";
+        if(image){
+            imgTag = `
+                <img onclick="openImage('${image}')"
+                    src="${image}" 
+                    class="max-w-[200px] rounded-xl mt-2 cursor-pointer hover:scale-[1.03] transition" 
+                />
+            `;
+        }
+
+        const bubble = `
+        <div class="w-full flex ${align}">
+            <div class="${bubbleColor} border ${borderColor} p-3 rounded-xl max-w-[70%] shadow animate-fadeIn">
+                <span class="font-bold ${nameColor}">${name}</span>
+                <p class="break-words mt-1">${text}</p>
+                ${imgTag}
+            </div>
+        </div>`;
+
+        messages.insertAdjacentHTML('beforeend', bubble);
+        messages.scrollTop = messages.scrollHeight;
+    };
+
+    socketio.on("message", (data) => {
+        createMessage(data.name, data.message, data.image || null);
+    });
+
+    // -----------------------
+    // SEND MESSAGE + IMAGE
+    // -----------------------
+    const send = () => {
+        const text = message.value.trim();
+        const file = imageInput.files[0];
+
+        if (!text && !file) return;
+
+        if(file){
+            const reader = new FileReader();
+            reader.onload = () => {
+                socketio.emit("message", { data: text, image: reader.result });
+            };
+            reader.readAsDataURL(file);
+        } else {
+            socketio.emit("message", { data: text });
+        }
+
+        message.value = "";
+        imageInput.value = "";
+    };
+
+    // -----------------------
+    // IMAGE POPUP
+    // -----------------------
+    const popup = document.getElementById("imagePreview");
+    const previewImg = document.getElementById("previewImg");
+
+    function openImage(src){
+        previewImg.src = src;
+        popup.classList.remove("hidden");
+
+        setTimeout(() => {
+            previewImg.classList.remove("opacity-0", "scale-90");
+            previewImg.classList.add("opacity-100", "scale-100");
+        }, 30);
+    }
+
+    popup.onclick = () => {
+        previewImg.classList.add("opacity-0", "scale-90");
+        setTimeout(() => popup.classList.add("hidden"), 200);
+    };
+
+    // -----------------------
+    // SHARE ROOM (WHATSAPP)
+    // -----------------------
+    function shareRoom(){
+        const roomCode = `{{ room }}`;
+        const shareText = `Join my Koris chat room! Use this code: ${roomCode}`;
+        const encoded = encodeURIComponent(shareText);
+        window.open(`https://wa.me/?text=${encoded}`, "_blank");
+    }
+
+    // -----------------------
+    // LEAVE ROOM
+    // -----------------------
+    function leaveRoom(){
+        window.location.href = "/";
+    }
+
+</script>
+
+<!-- ANIMATION STYLE -->
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0px); }
+}
+.animate-fadeIn { animation: fadeIn 0.25s ease-out; }
+</style>
+
+{% endblock %}

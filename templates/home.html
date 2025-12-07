@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="w-full flex flex-col items-center justify-center text-center space-y-8">
+
+  {% if error %}
+  <div class="w-full bg-red-500/10 border border-red-500/30 text-red-400 py-3 px-4 rounded-xl text-sm">
+      {{ error }}
+  </div>
+  {% endif %}
+
+  <h2 class="text-3xl font-bold text-white tracking-wide">Join a Chat Room</h2>
+  <p class="text-xlight text-sm max-w-md">Enter your name and room code to join, or create a new room.</p>
+
+  <form method="post" action="" class="w-full max-w-md space-y-6">
+
+      <!-- NAME INPUT -->
+      <div class="text-left">
+          <label class="block mb-1 text-xlight text-sm">Name</label>
+          <input 
+            placeholder="Username" 
+            name="name" 
+            value="{{name}}"
+            class="w-full bg-xdark focus:bg-xdark2 border border-xdark2 focus:border-xblue transition text-white px-4 py-3 rounded-xl outline-none"/>
+      </div>
+
+      <!-- ROOM JOIN SECTION -->
+      <div class="text-left space-y-3">
+          <label class="block mb-1 text-xlight text-sm">Room Code</label>
+          <div class="flex gap-3">
+              <input 
+                type="text" 
+                placeholder="Room Code" 
+                name="code" 
+                value="{{code}}"
+                class="flex-1 bg-xdark focus:bg-xdark2 border border-xdark2 focus:border-xblue transition text-white px-4 py-3 rounded-xl outline-none" />
+
+              <button 
+                type="submit" 
+                name="join"
+                class="bg-xblue hover:bg-xblue/80 text-white px-5 py-3 rounded-xl font-semibold tracking-wide transition">
+                Join
+              </button>
+          </div>
+      </div>
+
+      <!-- CREATE ROOM BUTTON -->
+      <button 
+        type="submit" 
+        name="create"
+        class="w-full bg-xdark2 hover:bg-xdark border border-xdark2 hover:border-xblue text-white py-3 rounded-xl font-semibold tracking-wide transition">
+        Create a Room
+      </button>
+
+  </form>
+</div>
+{% endblock %}
