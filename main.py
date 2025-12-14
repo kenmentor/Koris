@@ -88,10 +88,13 @@ def connect(auth):
      send({
          "name":name,"message":"joined the group","from":"system"
      } ,to = room)
+     print("hello /////////////////////////////////////////// ueg8g78g78478 /////////////")
      for content in rooms[room]["messages"]:
-         send( content,to=room)
+         print(BLUE+request.sid)
+         send( content,to=request.sid)
      print(f" {name} joined this {room} room")
      rooms[room]["members"] +=1
+
 
 @socketio.on("disconnect")
 def disconnect ():

@@ -82,46 +82,60 @@ event.preventDefault()
 send()
 }
     })
-    // CREATE MESSAGE BUBBLE
+
  
-    const createMessage = (name, text, image=null) => {
-        const isSelf = name.trim().toLowerCase() === USERNAME;
+    const createMessage = (name, text, image = null, from = "user") => {
+    const isSystem = from === "system";
+    const isSelf = !isSystem && name.trim().toLowerCase() === USERNAME;
 
-        const align = isSelf ? "justify-end" : "justify-start";
-        const bubbleColor = isSelf ? "bg-xblue text-white" : "bg-xdark text-white";
-        const borderColor = isSelf ? "border-xblue" : "border-xdark2";
-        const nameColor = isSelf ? "text-white" : "text-xblue";
+    const align = isSelf ? "justify-end" : "justify-start";
+    const bubbleColor = isSelf ? "bg-xblue text-white" : "bg-xdark text-white";
+    const borderColor = isSelf ? "border-xblue" : "border-xdark2";
+    const nameColor = isSelf ? "text-white" : "text-xblue";
 
-        let imgTag = "";
-        if(image){
-            imgTag = `
-                <img onclick="openImage('${image}')"
-                    src="${image}" 
-                    class="max-w-[200px] rounded-xl mt-2 cursor-pointer hover:scale-[1.03] transition" 
-                />
-            `;
-        }
+    let imgTag = "";
+    if (image) {
+        imgTag = `
+            <img onclick="openImage('${image}')"
+                src="${image}" 
+                class="max-w-[200px] rounded-xl mt-2 cursor-pointer hover:scale-[1.03] transition" 
+            />
+        `;
+    }
 
-        const bubble = `
-        <div class="w-full flex ${align}">
-            <div class="${bubbleColor} border ${borderColor} p-3 rounded-xl max-w-[70%] shadow animate-fadeIn">
-                <span class="font-bold ${nameColor}">${name}</span>
-                <p class="break-words mt-1">${text}</p>
-                ${imgTag}
-            </div>
-        </div>`;
+    // Normal user message
+    const bubble = `
+    <div class="w-full flex ${align}">
+        <div class="${bubbleColor} border ${borderColor} p-3 rounded-xl max-w-[70%] shadow animate-fadeIn">
+            <span class="font-bold ${nameColor}">${name}</span>
+            <p class="break-words mt-1">${text}</p>
+            ${imgTag}
+        </div>
+    </div>`;
 
-        messages.insertAdjacentHTML('beforeend', bubble);
-        messages.scrollTop = messages.scrollHeight;
-    };
+    // System-style message (like a system prompt)
+    const bubbleSys = `
+    <div class="w-full flex justify-center">
+        <div class="text-gray-400 text-sm italic px-4 py-2 rounded-lg bg-black/30 shadow animate-fadeIn">
+            <p class="break-words">${name}   ${text}</p>
+        </div>
+    </div>`;
+
+    if (isSystem) {
+        messages.insertAdjacentHTML("beforeend", bubbleSys);
+    } else {
+        messages.insertAdjacentHTML("beforeend", bubble);
+    }
+
+    messages.scrollTop = messages.scrollHeight;
+};
 
     socketio.on("message", (data) => {
-        createMessage(data.name, data.message, data.image || null);
+        console.log(data)
+        createMessage(data.name, data.message,  data.image || null,data.from,);
     });
 
-    // -----------------------
-    // SEND MESSAGE + IMAGE
-    // -----------------------
+   
     const send = () => {
         const text = message.value.trim();
         const file = imageInput.files[0];
@@ -142,9 +156,7 @@ send()
         imageInput.value = "";
     };
 
-    // -----------------------
-    // IMAGE POPUP
-    // -----------------------
+    
     const popup = document.getElementById("imagePreview");
     const previewImg = document.getElementById("previewImg");
 
@@ -163,9 +175,6 @@ send()
         setTimeout(() => popup.classList.add("hidden"), 200);
     };
 
-    // -----------------------
-    // SHARE ROOM (WHATSAPP)
-    // -----------------------
     function shareRoom(){
         const roomCode = `{{ room }}`;
         const shareText = `Join my Koris chat room! Use this code: ${roomCode}`;
@@ -173,9 +182,7 @@ send()
         window.open(`https://wa.me/?text=${encoded}`, "_blank");
     }
 
-    // -----------------------
-    // LEAVE ROOM
-    // -----------------------
+
     function leaveRoom(){
         window.location.href = "/";
     }
